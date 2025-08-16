@@ -1,0 +1,27 @@
+options:
+  logging: GCS_ONLY
+
+logsBucket: gs://nextwork-web-project-bucket/${BUILD_ID}/build_logs
+
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud auth print-access-token > /workspace/token.txt
+
+  - name: 'gcr.io/cloud-builders/mvn'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        export GOOGLE_OAUTH_ACCESS_TOKEN=$(cat /workspace/token.txt)
+        mvn clean install -s settings.xml
+
+artifacts:
+  objects:
+    location: gs://nextwork-web-project-bucket/${BUILD_ID}''
+    paths:
+      - target/**
+
